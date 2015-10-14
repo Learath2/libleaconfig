@@ -22,7 +22,7 @@ typedef enum
 
 typedef struct config *config_t;
 
-config_t config_init();
+config_t config_init(void);
 config_error_t config_clear(config_t d);
 config_error_t config_dispose(config_t d);
 config_error_t config_set_filename(config_t d, const char *name);

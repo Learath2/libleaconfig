@@ -34,17 +34,19 @@ static config_entry_type_t config_determine_value_type(char *s);
 static config_error_t config_entry_create(struct config_entry **e, const char *name);
 static config_error_t config_entry_delete(struct config_entry *e);
 
-config_t config_init()
+config_t config_init(void)
 {
     struct config *d = malloc(sizeof *d);
     d->length = 0;
     d->data = malloc(sizeof *d->data * CHUNK_SIZE);
+    return d;
 }
 
 config_error_t config_clear(config_t d)
 {
     for(int i = 0; i < d->length; i++)
         config_entry_delete(d->data[i]);
+    return CONFIG_SUCCESS;
 }
 
 config_error_t config_dispose(config_t d)
@@ -53,6 +55,7 @@ config_error_t config_dispose(config_t d)
     free(d->data);
     free(d->filename);
     free(d);
+    return CONFIG_SUCCESS;
 }
 
 config_error_t config_set_filename(config_t d, const char *name)
@@ -230,11 +233,12 @@ static config_error_t config_entry_delete(struct config_entry *e)
         free(e->data.sval);
     free(e->name);
     free(e);
+    return CONFIG_SUCCESS;
 }
 
 static struct config_entry *config_lookup_entry(config_t d, const char* name, size_t *index)
 {
-    for(int i = 0; i < d->length; i++)
+    for(size_t i = 0; i < d->length; i++)
     {
         if(!strcmp(d->data[i]->name, name)){
             if(index)
@@ -242,14 +246,15 @@ static struct config_entry *config_lookup_entry(config_t d, const char* name, si
             return d->data[i];
         }
     }
+    return NULL;
 }
 
 static void remove_tl_whitespaces(char *s)
 {
     char *p;
-    while(isspace(*s)) s++;
+    while(isspace((int)*s)) s++;
     p = s + strlen(s) - 1;
-    while(isspace(*p)) p--;
+    while(isspace((int)*p)) p--;
     p[1] = '\0';
 }
 
