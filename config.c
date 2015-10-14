@@ -89,10 +89,11 @@ config_error_t config_read_file(config_t d) //NOTDONE
 
 config_error_t config_add_entry(config_t d, const char *name)
 {
-    if(d->length % CHUNK_SIZE == 0){
-        struct config_entry **new = realloc(d->data, (sizeof *d->data * d->length) + CHUNK_SIZE);
+    if( d->length > 0 && d->length % CHUNK_SIZE == 0){
+        struct config_entry **new = realloc(d->data, (d->length + CHUNK_SIZE) * sizeof *d->data);
         if(!new)
             return CONFIG_ERROR_MALLOC;
+        d->data = new;
     }
     struct config_entry *e;
     config_error_t err = config_entry_create(&e, name);
