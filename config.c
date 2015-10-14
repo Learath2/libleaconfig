@@ -281,6 +281,8 @@ static config_error_t config_entry_create(struct config_entry **e, const char *n
     if(!entry)
         goto exit;
 
+    memset(entry, 0, sizeof *entry);
+
     entry->name = malloc(sizeof *entry->name * strlen(name) + 1);
     if(!entry->name)
         goto exit; 
