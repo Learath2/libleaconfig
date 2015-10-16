@@ -1,5 +1,10 @@
-#include "config.h"
-#include "stdio.h"
+/* conftest.c - (C) 2015, Emir Marincic
+ * libleaconfig - config library
+ * See README for contact-, COPYING for license information. */
+
+#include <stdio.h>
+
+#include <libleaconfig/leaconfig.h>
 
 int main(void)
 {

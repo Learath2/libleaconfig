@@ -1,3 +1,10 @@
+/* leaconfig.h - (C) 2015, Emir Marincic
+ * libleaconfig - config library
+ * See README for contact-, COPYING for license information. */
+
+#ifndef LIBLEACONFIG_LEACONFIG_H
+#define LIBLEACONFIG_LEACONFIG_H 1
+
 typedef enum
 {
     CONFIG_TYPE_NAN = -1,
@@ -37,3 +44,5 @@ config_error_t config_entry_get_int(config_t d, const char *name, int *i);
 config_error_t config_entry_get_double(config_t d, const char *name, double *f);
 config_error_t config_entry_get_bool(config_t d, const char *name, int *i);
 config_error_t config_entry_get_string(config_t d, const char *name, const char **s);
+
+#endif /* LIBLEACONFIG_LEACONFIG_H */
