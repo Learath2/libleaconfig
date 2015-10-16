@@ -1,3 +1,11 @@
+/* leaconfig.c - (C) 2015, Emir Marincic
+ * libleaconfig - config library
+ * See README for contact-, COPYING for license information. */
+
+#if HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
@@ -5,7 +13,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "config.h"
+#include <libleaconfig/leaconfig.h>
 
 #define CHUNK_SIZE 32
 #define MAX_LINE 1000
