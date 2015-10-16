@@ -29,7 +29,7 @@ struct config_entry
 };
 
 static struct config_entry *config_lookup_entry(config_t d, const char* name, size_t *index);
-static void remove_tl_whitespaces(char *s);
+static char *remove_tl_whitespaces(char *s);
 static config_entry_type_t config_determine_value_type(char *s);
 static config_error_t config_entry_create(struct config_entry **e, const char *name);
 static config_error_t config_entry_delete(struct config_entry *e);
@@ -72,6 +72,8 @@ config_error_t config_read_file(config_t d) //NOTDONE
     char line[MAX_LINE];
     char *lhs, *rhs, *p;
     FILE *file = fopen(d->filename, "r");
+    if(!file)
+        return CONFIG_ERROR_IO;
     while(fgets(line, MAX_LINE, file) && !feof(file))
     {
         if(!strchr(line, '\n') || line[0] == '#' || (line[0] == '/' && line[1] == '/')) //Comment or line too long
@@ -85,8 +87,30 @@ config_error_t config_read_file(config_t d) //NOTDONE
         (rhs++)[0] = '\0';
 
         //Remove trailing and leading spaces from lhs and rhs
-        remove_tl_whitespaces(lhs);
-        remove_tl_whitespaces(rhs);
+        lhs = remove_tl_whitespaces(lhs);
+        rhs = remove_tl_whitespaces(rhs);
+
+        config_add_entry(d, lhs);
+        config_entry_type_t type = config_determine_value_type(rhs);
+
+        switch(type){
+            case CONFIG_TYPE_INT:
+                config_entry_set_int(d, lhs, strtol(rhs, NULL, 0));
+                break;
+            case CONFIG_TYPE_BOOL:
+                config_entry_set_bool(d, lhs, strstr(rhs, "true") ? 1 : 0);
+                break;
+            case CONFIG_TYPE_FLOAT:
+                config_entry_set_double(d, lhs, strtod(rhs, NULL));
+                break;
+            case CONFIG_TYPE_STRING:
+                rhs[strlen(rhs) - 1] = '\0';
+                rhs++;
+                config_entry_set_string(d, lhs, rhs);
+                break;
+            default:
+                continue;
+        }
     }
 }
 
@@ -114,7 +138,8 @@ config_error_t config_remove_entry(config_t d, const char *name)
         return CONFIG_ERROR_NEXISTS;
 
     config_entry_delete(e);
-    memmove(d->data[index], d->data[index + 1], sizeof *d->data * (d->length - index - 1));
+    d->data[index] = d->data[d->length - 1];
+    d->data[d->length - 1] = NULL;
     d->length--;
     return CONFIG_SUCCESS;
 }
@@ -249,13 +274,14 @@ static struct config_entry *config_lookup_entry(config_t d, const char* name, si
     return NULL;
 }
 
-static void remove_tl_whitespaces(char *s)
+static char *remove_tl_whitespaces(char *s)
 {
     char *p;
     while(isspace((int)*s)) s++;
     p = s + strlen(s) - 1;
     while(isspace((int)*p)) p--;
     p[1] = '\0';
+    return s;
 }
 
 static config_entry_type_t config_determine_value_type(char *s)
@@ -263,11 +289,11 @@ static config_entry_type_t config_determine_value_type(char *s)
     char *end;
     long i;
     double d;
-    if(s[0] == '"' && s[strlen(s)] == '"')
+    if(s[0] == '"' && s[strlen(s) - 1] == '"')
         return CONFIG_TYPE_STRING;
-    else if((i = strtol(s, &end, 0)) && end == '\0' && (i <= INT_MAX && i >= INT_MIN))
+    else if((i = strtol(s, &end, 0)) && *end == '\0' && (i <= INT_MAX && i >= INT_MIN))
         return CONFIG_TYPE_INT;
-    else if((d = strtod(s, &end)) && end =='\0')
+    else if((d = strtod(s, &end)) && *end =='\0')
         return CONFIG_TYPE_FLOAT;
     else if(strstr(s, "true") || strstr(s, "false"))
         return CONFIG_TYPE_BOOL;
