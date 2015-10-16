@@ -1,0 +1,12 @@
+This is libleaconfig, version 0.0.0
+config library
+
+Quickstart:
+run ./autogen.sh to setup the autohell
+afterwards, usual ./configure ; make ; make install stuff applies
+
+See INSTALL for generic autohell compile/install instructions.
+
+(C) 2015 Emir Marincic
+
+See COPYING for license information
