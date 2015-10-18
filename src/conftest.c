@@ -30,7 +30,7 @@ int main(void)
     config_remove_entry(conf, "test");
     config_remove_entry(conf, "kek");
     config_set_filename(conf, "testconf.conf");
-    config_read_file(conf);
+    config_read_file(conf, NULL);
     config_entry_get_int(conf, "ur_an_fagit", &i);
     printf("ur_an_fagit=%d\n", i);
     config_entry_get_string(conf, "potatoes_are_nice", &s);
