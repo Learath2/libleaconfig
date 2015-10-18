@@ -75,11 +75,11 @@ config_error_t config_set_filename(config_t d, const char *name)
     return CONFIG_SUCCESS;
 }
 
-config_error_t config_read_file(config_t d) //NOTDONE
+config_error_t config_read_file(config_t d, const char *filename) //NOTDONE
 {
     char line[MAX_LINE];
     char *lhs, *rhs, *p;
-    FILE *file = fopen(d->filename, "r");
+    FILE *file = fopen((filename ? filename : d->filename), "r");
     if(!file)
         return CONFIG_ERROR_IO;
     while(fgets(line, MAX_LINE, file) && !feof(file))
@@ -98,8 +98,11 @@ config_error_t config_read_file(config_t d) //NOTDONE
         lhs = remove_tl_whitespaces(lhs);
         rhs = remove_tl_whitespaces(rhs);
 
-        config_add_entry(d, lhs);
         config_entry_type_t type = config_determine_value_type(rhs);
+        if(type <= CONFIG_TYPE_NONE) //Couldn't be determined possibly should output this somehow
+            continue;
+        config_add_entry(d, lhs);
+
 
         switch(type){
             case CONFIG_TYPE_INT:
@@ -116,10 +119,38 @@ config_error_t config_read_file(config_t d) //NOTDONE
                 rhs++;
                 config_entry_set_string(d, lhs, rhs);
                 break;
-            default:
+        }
+    }
+    fclose(file);
+    return CONFIG_SUCCESS;
+}
+
+config_error_t config_write_file(config_t d, const char* filename)
+{
+    FILE *file = fopen((filename ? filename : d->filename), "w+");
+    if(!file)
+        return CONFIG_ERROR_IO;
+    for(int i = 0; i < d->length; i++){
+        struct config_entry *e = d->data[i];
+        switch(e->type){
+            case CONFIG_TYPE_INT:
+                fprintf(file, "%s:%d\n", e->name, e->data.ival);
+                break;
+            case CONFIG_TYPE_BOOL:
+                fprintf(file, "%s:%s\n", e->name, e->data.ival ? "true" : "false");
+                break;
+            case CONFIG_TYPE_FLOAT:
+                fprintf(file, "%s:%f\n", e->name, e->data.fval);
+                break;
+            case CONFIG_TYPE_STRING:
+                fprintf(file, "%s:%s\n", e->name, e->data.sval);
+                break;
+            default: //Entry doesn't have type possibly should output this somehow
                 continue;
         }
     }
+    fclose(file);
+    return CONFIG_SUCCESS;
 }
 
 config_error_t config_add_entry(config_t d, const char *name)
