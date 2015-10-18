@@ -53,7 +53,7 @@ config_t config_init(void)
 config_error_t config_clear(config_t d)
 {
     for(int i = 0; i < d->length; i++)
-        config_entry_delete(d->data[i]);
+        config_remove_entry(d, d->data[i]->name);
     return CONFIG_SUCCESS;
 }
 
