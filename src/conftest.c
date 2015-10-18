@@ -27,6 +27,7 @@ int main(void)
     config_entry_set_double(conf, "test", 0.1f);
     config_entry_get_double(conf, "test", &d);
     printf("test=%f\n", d);
+    d = 0;
     config_write_file(conf, "tmp.conf");
     config_remove_entry(conf, "test");
     config_remove_entry(conf, "kek");
@@ -36,5 +37,12 @@ int main(void)
     printf("ur_an_fagit=%d\n", i);
     config_entry_get_string(conf, "potatoes_are_nice", &s);
     printf("potatoes_are_nice=%s\n", s);
+    config_clear(conf);
+    config_set_filename("tmp.conf");
+    config_read_file(conf, NULL);
+    config_entry_get_double(conf, "test", &d);
+    printf("test=%f\n", d);
+    config_entry_get_string(conf, "kek", &s);
+    printf("kek=%s\n", s);
     config_dispose(conf);
 }
