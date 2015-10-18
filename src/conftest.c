@@ -38,7 +38,7 @@ int main(void)
     config_entry_get_string(conf, "potatoes_are_nice", &s);
     printf("potatoes_are_nice=%s\n", s);
     config_clear(conf);
-    config_set_filename("tmp.conf");
+    config_set_filename(conf, "tmp.conf");
     config_read_file(conf, NULL);
     config_entry_get_double(conf, "test", &d);
     printf("test=%f\n", d);
