@@ -178,7 +178,7 @@ config_error_t config_write_file(config_t d, const char* filename)
                 fprintf(file, "%s:%f\n", e->name, e->data.fval);
                 break;
             case CONFIG_TYPE_STRING:
-                fprintf(file, "\"%s\":%s\n", e->name, e->data.sval);
+                fprintf(file, "%s:\"%s\"\n", e->name, e->data.sval);
                 break;
             default: //Entry doesn't have type possibly should output this somehow
                 continue;
