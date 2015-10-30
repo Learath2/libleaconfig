@@ -49,6 +49,7 @@ config_t config_init(void)
     struct config *d = malloc(sizeof *d);
     d->length = 0;
     d->data = malloc(sizeof *d->data * CHUNK_SIZE);
+    d->filename = NULL;
     return d;
 }
 
@@ -96,6 +97,7 @@ config_error_t config_set_filename(config_t d, const char *name)
     else if(!d && !default_conf)
         return CONFIG_ERROR_NEXISTS;
 
+    free(d->filename);
     d->filename = malloc(sizeof *d->filename * strlen(name) + 1);
     if(!d->filename)
         return CONFIG_ERROR_MALLOC;
@@ -335,7 +337,7 @@ double config_entry_get_double(config_t d, const char *name)
     if(!d && default_conf)
         d = default_conf;
     else if(!d && !default_conf)
-        return CONFIG_ERROR_NEXISTS;
+        return 0;
 
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
@@ -350,7 +352,7 @@ int config_entry_get_bool(config_t d, const char *name)
     if(!d && default_conf)
         d = default_conf;
     else if(!d && !default_conf)
-        return CONFIG_ERROR_NEXISTS;
+        return 0;
 
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
@@ -365,7 +367,7 @@ const char *config_entry_get_string(config_t d, const char *name)
     if(!d && default_conf)
         d = default_conf;
     else if(!d && !default_conf)
-        return CONFIG_ERROR_NEXISTS;
+        return NULL;
 
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
