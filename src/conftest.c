@@ -18,7 +18,7 @@ int main(void)
     config_remove_entry(conf, "test");
     config_add_entry(conf, "test");
     config_entry_set_double(conf, "test", 0.1f);
-    printf("test=%f\n", config_entry_get_double(conf, "test", &d));
+    printf("test=%f\n", config_entry_get_double(conf, "test"));
     config_write_file(conf, "tmp.conf");
     config_remove_entry(conf, "test");
     config_remove_entry(conf, "kek");
