@@ -9,9 +9,10 @@
 int main(void)
 {
     config_t conf = config_init();
+    config_set_config(conf);
     config_add_entry(conf, "test");
-    config_entry_set_int(conf, "test", 155);
-    printf("test=%d\n", config_entry_get_int(conf, "test"));
+    CFGSET("test", 155, int);
+    printf("test=%d\n", CFG("test", int));
     config_add_entry(conf, "kek");
     config_entry_set_string(conf, "kek", "toast");
     printf("kek=%s\n", config_entry_get_string(conf, "kek"));
