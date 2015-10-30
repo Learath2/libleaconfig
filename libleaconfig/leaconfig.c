@@ -42,6 +42,8 @@ static config_entry_type_t config_determine_value_type(char *s);
 static config_error_t config_entry_create(struct config_entry **e, const char *name);
 static config_error_t config_entry_delete(struct config_entry *e);
 
+static config_t default_conf;
+
 config_t config_init(void)
 {
     struct config *d = malloc(sizeof *d);
@@ -52,6 +54,11 @@ config_t config_init(void)
 
 config_error_t config_clear(config_t d)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     for(int i = 0; i < d->length; i++)
         config_remove_entry(d, d->data[i]->name);
     return CONFIG_SUCCESS;
@@ -59,6 +66,11 @@ config_error_t config_clear(config_t d)
 
 config_error_t config_dispose(config_t d)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     config_clear(d);
     free(d->data);
     free(d->filename);
@@ -66,8 +78,21 @@ config_error_t config_dispose(config_t d)
     return CONFIG_SUCCESS;
 }
 
+config_error_t config_set_config(config_t d)
+{
+    if(!d)
+        return CONFIG_ERROR_NEXISTS;
+    default_conf = d;
+    return CONFIG_SUCCESS;
+}
+
 config_error_t config_set_filename(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     d->filename = malloc(sizeof *d->filename * strlen(name) + 1);
     if(!d->filename)
         return CONFIG_ERROR_MALLOC;
@@ -77,6 +102,11 @@ config_error_t config_set_filename(config_t d, const char *name)
 
 config_error_t config_read_file(config_t d, const char *filename) //NOTDONE
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     char line[MAX_LINE];
     char *lhs, *rhs, *p;
     FILE *file = fopen((filename ? filename : d->filename), "r");
@@ -127,6 +157,11 @@ config_error_t config_read_file(config_t d, const char *filename) //NOTDONE
 
 config_error_t config_write_file(config_t d, const char* filename)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     FILE *file = fopen((filename ? filename : d->filename), "w+");
     if(!file)
         return CONFIG_ERROR_IO;
@@ -155,6 +190,11 @@ config_error_t config_write_file(config_t d, const char* filename)
 
 config_error_t config_add_entry(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     if( d->length > 0 && d->length % CHUNK_SIZE == 0){
         struct config_entry **new = realloc(d->data, (d->length + CHUNK_SIZE) * sizeof *d->data);
         if(!new)
@@ -171,6 +211,11 @@ config_error_t config_add_entry(config_t d, const char *name)
 
 config_error_t config_remove_entry(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     size_t index = 0;
     struct config_entry *e = config_lookup_entry(d, name, &index);
     if(!e)
@@ -185,6 +230,11 @@ config_error_t config_remove_entry(config_t d, const char *name)
 
 config_error_t config_entry_set_int(config_t d, const char *name, int i)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
         return CONFIG_ERROR_NEXISTS;
@@ -199,6 +249,11 @@ config_error_t config_entry_set_int(config_t d, const char *name, int i)
 
 config_error_t config_entry_set_double(config_t d, const char *name, double f)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
         return CONFIG_ERROR_NEXISTS;
@@ -213,6 +268,11 @@ config_error_t config_entry_set_double(config_t d, const char *name, double f)
 
 config_error_t config_entry_set_bool(config_t d, const char *name, int i)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
         return CONFIG_ERROR_NEXISTS;
@@ -227,6 +287,11 @@ config_error_t config_entry_set_bool(config_t d, const char *name, int i)
 
 config_error_t config_entry_set_string(config_t d, const char *name, const char *s)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
         return CONFIG_ERROR_NEXISTS;
@@ -247,48 +312,64 @@ config_error_t config_entry_set_string(config_t d, const char *name, const char 
     return CONFIG_SUCCESS;
 }
 
-config_error_t config_entry_get_int(config_t d, const char *name, int *i)
+int config_entry_get_int(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return 0;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
-        return CONFIG_ERROR_NEXISTS;
+        return 0;
     if(e->type != CONFIG_TYPE_INT)
-        return CONFIG_ERROR_MISMATCH;
-    *i = e->data.ival;
-    return CONFIG_SUCCESS;
+        return 0;
+    return e->data.ival;
 }
 
-config_error_t config_entry_get_double(config_t d, const char *name, double *f)
+double config_entry_get_double(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
-        return CONFIG_ERROR_NEXISTS;
-    if(e->type != CONFIG_TYPE_FLOAT)
-        return CONFIG_ERROR_MISMATCH;
-    *f = e->data.fval;
-    return CONFIG_SUCCESS;
+        return 0;
+    if(e->type !=CONFIG_TYPE_FLOAT)
+        return 0;
+    return e->data.fval;
 }
 
-config_error_t config_entry_get_bool(config_t d, const char *name, int *i)
+int config_entry_get_bool(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
-        return CONFIG_ERROR_NEXISTS;
+        return 0;
     if(e->type != CONFIG_TYPE_BOOL)
-        return CONFIG_ERROR_MISMATCH;
-    *i = e->data.ival;
-    return CONFIG_SUCCESS;
+        return 0;
+    return e->data.ival;
 }
 
-config_error_t config_entry_get_string(config_t d, const char *name, const char **s)
+const char *config_entry_get_string(config_t d, const char *name)
 {
+    if(!d && default_conf)
+        d = default_conf;
+    else if(!d && !default_conf)
+        return CONFIG_ERROR_NEXISTS;
+
     struct config_entry *e = config_lookup_entry(d, name, NULL);
     if(!e)
-        return CONFIG_ERROR_NEXISTS;
+        return NULL;
     if(e->type != CONFIG_TYPE_STRING)
-        return CONFIG_ERROR_MISMATCH;
-    *s = e->data.sval;
-    return CONFIG_SUCCESS;
+        return NULL;
+    return e->data.sval;
 }
 
 static config_error_t config_entry_delete(struct config_entry *e)
