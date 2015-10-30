@@ -59,8 +59,11 @@ config_error_t config_clear(config_t d)
     else if(!d && !default_conf)
         return CONFIG_ERROR_NEXISTS;
 
-    for(int i = 0; i < d->length; i++)
-        config_remove_entry(d, d->data[0]->name);
+    for(int i = 0; i < d->length; i++){
+        config_entry_delete(d->data[i]);
+        d->data[i] = NULL;
+    }
+    d->length = 0;
     return CONFIG_SUCCESS;
 }
 
