@@ -60,7 +60,7 @@ config_error_t config_clear(config_t d)
         return CONFIG_ERROR_NEXISTS;
 
     for(int i = 0; i < d->length; i++)
-        config_remove_entry(d, d->data[i]->name);
+        config_remove_entry(d, d->data[0]->name);
     return CONFIG_SUCCESS;
 }
 
